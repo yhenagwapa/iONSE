@@ -441,7 +441,7 @@ test.describe.serial("View Imported Attlog/s", () => {
     
     // Apply filter by Date
     await page.getByRole('combobox', { name: 'Date' }).click();
-    await page.getByText('01 Jul 2026').click();
+    await page.getByText('21 Jul 2026').click();
 
     await page.waitForTimeout(1000); // wait for filter to apply
 
@@ -451,8 +451,8 @@ test.describe.serial("View Imported Attlog/s", () => {
     
     for (let i = 0; i < filteredCountByDate; i++) {
       const date = await filteredRowsByDate.nth(i).locator('td').nth(2).innerText();
-      expect(date).toBe('01 Jul 2026');
+      expect(date).toBe('21 Jul 2026');
     } // for dev fix here, failed initially, for rerun after patch
   
   });
-});
+}); 
