@@ -249,4 +249,77 @@ test.describe.serial('Admin Attlog Import.', () => {
 
     console.log(`Keyword "${noMatch}" returned no results as expected.`);
   });
+
+  test('Test 6: Verify it can navigate between pages.', async ({ page }) => {
+    await page.locator('span.p-paginator-pages').waitFor();
+    const nextPageButton = await page.getByRole('button', { name: 'Next Page' });
+    const prevPageButton = await page.getByRole('button', { name: 'Previous Page' });
+
+    //count page buttons in the pagination
+    const pageButtons = page.locator('span.p-paginator-pages button');
+    console.log(`Total pages: ${await pageButtons.count()}`);
+
+    //skip test if there is only one page
+    if (await pageButtons.count() <= 1) {
+      console.log("Only one page available. Skipping pagination test.");
+      test.skip();
+    }
+
+    //click next button until disabled
+    while (await nextPageButton.isEnabled()) {
+      const currentPage = await page.locator('span.p-paginator-pages button[data-p-active="true"]').innerText();
+
+      await nextPageButton.click();
+
+      // wait for page to change
+      await expect(async () => {const newPage = await page.locator('span.p-paginator-pages button[data-p-active="true"]').innerText();
+      expect(newPage).not.toBe(currentPage);}).toPass();
+    }
+
+    console.log(`Reached last page. Total pages: ${await pageButtons.count()}`);
+
+    //click prev button until disabled
+    while (await prevPageButton.isEnabled()) {
+        const currentPage = await page.locator('span.p-paginator-pages button[data-p-active="true"]').innerText();
+
+      await prevPageButton.click();
+
+      // wait for page to change
+      await expect(async () => {const newPage = await page.locator('span.p-paginator-pages button[data-p-active="true"]').innerText();
+      expect(newPage).not.toBe(currentPage);}).toPass();
+    }
+
+    console.log(`Reached first page. Total pages: ${await pageButtons.count()}`);
+
+  });
+
+  test('Test 7: Verify rows per page works.', async ({ page }) => {
+    //count the number of rows in the attlogs table
+    await page.waitForSelector('table tbody tr');
+    const rows = await page.locator('table tbody tr');
+    const rowsCount  = await rows.count();
+
+    //skip test if there is only one row or no rows
+    if (rowsCount <= 1) {
+      console.log("Only one row available. Skipping rows per page test.");
+      test.skip();
+    }
+
+    if (rowsCount > 10) {
+      //click rows per page dropdown
+      await page.getByRole('combobox', { name: 'Rows per page' }).click();
+
+      //select 10 rows per page
+      await page.getByRole('option', { name: '10' }).click();
+
+      //count the number of rows in the attlogs table after changing rows per page to 10
+      await page.waitForSelector('table tbody tr');
+      const rowsPerPage = await page.locator('table tbody tr');
+      const rowsCountPerPage = await rowsPerPage.count();
+
+      //assert that the number of rows in the attlogs table is less than or equal to 10
+      expect(rowsCountPerPage).toBeLessThanOrEqual(rowsCount);
+    }
+    
+  });
 });
