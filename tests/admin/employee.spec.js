@@ -1316,6 +1316,8 @@ test.describe.serial("Employee/User Management.", () => {
     const firstName = employeeFaker.firstName;
     const middleName = employeeFaker.middleName;
     const lastName = employeeFaker.lastName;
+    const password = employeeFaker.password;
+    const confirmPassword = employeeFaker.confirmPassword;
     const position = employeeFaker.position;
     const designation = employeeFaker.designation;
     const employmentStatus = employeeFaker.employmentStatus;
@@ -1353,6 +1355,10 @@ test.describe.serial("Employee/User Management.", () => {
     await employmentStatusSelect.click();
     await page.getByRole('option', { name: employmentStatus, exact: true }).click();
 
+    const fundSourceSelect = page.locator('.field').getByLabel('Fund Source');
+    await fundSourceSelect.click();
+    await page.getByRole('option', { name: fundSource, exact: true }).click();
+
     const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
     await assignmentSelect.click();
     await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
@@ -1373,7 +1379,7 @@ test.describe.serial("Employee/User Management.", () => {
     await page.getByRole('button', { name: 'Save Changes' }).click();
 
     // expect error message to be visible
-    await expect(emailField.getByText('The email has already been taken.', { exact: true })).toBeVisible();
+    await expect(emailField.getByText('This email has already been taken.', { exact: true })).toBeVisible();
   });
 
   test("Test 16: Cannot update employee/user if one or more required field is empty.", async ({ page }) => {
@@ -1404,6 +1410,7 @@ test.describe.serial("Employee/User Management.", () => {
     const lastName = page.locator('.field').filter({ hasText: 'Last Name' });
     const email = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
     const confirmEmail = page.locator('.field').filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+    const division = page.locator('.field').filter({ hasText: 'Division' });
 
     await firstName.locator('input').fill('');
     await lastName.locator('input').fill('');
@@ -1417,6 +1424,7 @@ test.describe.serial("Employee/User Management.", () => {
     await expect(lastName.getByText('The last name field is required.', { exact: true })).toBeVisible();
     await expect(email.getByText('The email field is required.', { exact: true })).toBeVisible();
     await expect(confirmEmail.getByText('The Confirm Email Address field is required.', { exact: true })).toBeVisible();
+    await expect(division.getByText('The division field is required.', { exact: true })).toBeVisible();
   });
         
 });
