@@ -1,13 +1,13 @@
 // @ts-check
 import { test, expect } from "@playwright/test";
-import { employeeValidFaker, employeeInvalidFaker } from '../../fake-data/employee-faker';
+import { employeeValidFaker, employeeInvalidFaker, employeeEditValidFaker } from '../../fake-data/employee-faker';
 
 test.describe.serial("Employee/User Management.", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("https://fo11apps-staging.dswd.gov.ph/ionse/");
 
-    await page.locator("#account").fill("admin");
-    await page.locator("#password").fill("password");
+    await page.locator("#account").fill("yvvillamil");
+    await page.locator("#password").fill("Dswd@12345");
     await page.locator("#privacy").setChecked(true);
 
     await page.getByRole("button", { name: "Login" }).click();
@@ -498,7 +498,7 @@ test.describe.serial("Employee/User Management.", () => {
 
     await page.keyboard.press("Enter");
 
-    await page.waitForTimeout(1000); // wait for search results to load
+    await page.waitForTimeout(5000); // wait for search results to load
 
     // Verify that the search result is correct
     const searchResult = await page
@@ -1013,6 +1013,410 @@ test.describe.serial("Employee/User Management.", () => {
     await expect(password.getByText('The password field is required.', { exact: true })).toBeVisible();
     await expect(confirmPassword.getByText('The password field is required.', { exact: true })).toBeVisible();
     await expect(division.getByText('The division field is required.', { exact: true })).toBeVisible();
+  });
+
+  test("Test 12: Can update employee details with valid entries.", async ({ page }) => {
+    // Navigate to Employee Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Employee" }).click();
+
+    // verify url is correct
+    await expect(page.url()).toContain("/users");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const editModal = page.getByRole('dialog');
+
+    // open edit modal to get existing user values
+    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    // expect edit modal to be visible
+    await expect(editModal).toBeVisible();
+
+    // expect that employee id and username input fields are disabled
+    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
+    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
+
+    // use faker for filling out the form
+    const employeeEditFaker = employeeEditValidFaker();
+    const firstName = employeeEditFaker.firstName;
+    const middleName = employeeEditFaker.middleName;
+    const lastName = employeeEditFaker.lastName;
+    const email = employeeEditFaker.email;
+    const confirmEmail = employeeEditFaker.confirmEmail;
+    const position = employeeEditFaker.position;
+    const designation = employeeEditFaker.designation;
+    const employmentStatus = employeeEditFaker.employmentStatus;
+    const fundSource = employeeEditFaker.fundSource;
+    const areaOfAssignment = employeeEditFaker.areaOfAssignment;
+    const division = employeeEditFaker.division;
+    const unitSection = employeeEditFaker.unitSection;
+    const userType = employeeEditFaker.userType;
+
+    // fill out the form
+    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
+    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
+    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
+    
+    const emailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Email Address', { exact: true }) });
+
+    const confirmEmailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+
+    await emailField.locator('input').fill(email);
+    await confirmEmailField.locator('input').fill(confirmEmail);
+
+    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
+    await positionSelect.click();
+    await page.getByRole('option', { name: position , exact: true }).click();
+
+    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
+    await designationSelect.click();
+    await page.getByRole('option', { name: designation , exact: true }).click();
+
+    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
+    await employmentStatusSelect.click();
+    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
+
+    // const fundSourceSelect = page.locator('.field').filter({ hasText: 'Fund Source' }).getByRole('combobox');
+    // await fundSourceSelect.click();
+    // await page.getByRole('option', { name: fundSource, exact: true }).click();
+
+    
+    // await page.locator('#pv_id_525 > .p-select-dropdown > .p-icon').click();
+    // await page.getByRole('combobox', { name: 'Assistance to Individuals in' }).press('Escape');
+    // await page.getByRole('button', { name: 'Close' }).click();
+
+    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
+    await assignmentSelect.click();
+    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
+    
+    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
+    await divisionSelect.click();
+    await page.getByRole('option', { name: division, exact: true }).click();
+    
+    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
+    await unitSectionSelect.click();
+    await page.getByRole('option', { name: unitSection, exact: true }).click();
+
+    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
+    await userTypeSelect.click();
+    await page.getByRole('option', { name: userType, exact: true }).click();
+
+    // click save button
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    await page.waitForTimeout(10000); // wait for search results to load
+
+    // search for the newly added employee/user
+    const employeeFullName = firstName + " " + middleName + " " + lastName;
+    await page.locator('input[placeholder="Search"]').fill(employeeFullName);
+
+    await page.keyboard.press("Enter");
+
+    await page.waitForTimeout(5000); // wait for search results to load
+
+    // Verify that the search result is correct
+    const searchResult = await page
+      .locator("table tbody tr")
+      .first()
+      .locator("td")
+      .nth(1)
+      .innerText();
+    expect(searchResult).toContain(employeeFullName);
+  });
+
+  test("Test 13: Cannot update employee details with invalid entries.", async ({ page }) => {
+    // Navigate to Employee Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Employee" }).click();
+
+    //verify url is correct
+    await expect(page.url()).toContain("/users");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const editModal = page.getByRole('dialog');
+
+    // open edit modal to get existing user values
+    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    // expect edit modal to be visible
+    await expect(editModal).toBeVisible();
+
+    // expect that employee id and username input fields are disabled
+    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
+    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
+
+    // use faker for filling out the form
+    const employeeFaker = employeeInvalidFaker();
+    const invalidInput = employeeFaker.invalidInput;
+
+    // fill out the form
+    const firstNameField = page.locator('.field').filter({ has: page.getByText('First Name', { exact: true })});
+    const lastNameField = page.locator('.field').filter({ has: page.getByText('First Name', { exact: true })});
+    const emailField = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
+
+    await firstNameField.locator('input').fill(invalidInput);
+    await lastNameField.locator('input').fill(invalidInput);
+    await emailField.locator('input').fill(invalidInput);
+
+    // click save button
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // check if first name field shows an invalid message containing "The field contains invalid characters."
+    await expect(firstNameField.getByText('The field contains invalid characters.', { exact: true })).toBeVisible();
+    await expect(lastNameField.getByText('The field contains invalid characters.', { exact: true })).toBeVisible();
+    await expect(emailField.getByText('The email field is not a valid email.', { exact: true })).toBeVisible();
+    
+  });
+
+  test("Test 14: Cannot update employee/user if email do not match.", async ({ page }) => {
+    // Navigate to Employee Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Employee" }).click();
+
+    //verify url is correct
+    await expect(page.url()).toContain("/users");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const editModal = page.getByRole('dialog');
+
+    // open edit modal to get existing user values
+    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    // expect edit modal to be visible
+    await expect(editModal).toBeVisible();
+
+    // expect that employee id and username input fields are disabled
+    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
+    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
+
+    // use faker for filling out the form
+    const employeeFaker = employeeEditValidFaker();
+    const firstName = employeeFaker.firstName;
+    const middleName = employeeFaker.middleName;
+    const lastName = employeeFaker.lastName;
+    const position = employeeFaker.position;
+    const designation = employeeFaker.designation;
+    const employmentStatus = employeeFaker.employmentStatus;
+    const areaOfAssignment = employeeFaker.areaOfAssignment;
+    const division = employeeFaker.division;
+    const unitSection = employeeFaker.unitSection;
+    const userType = employeeFaker.userType;
+
+    const email = employeeFaker.email;
+    const confirmEmail = "emaildonotmatch@example.com";
+
+    // fill out the form
+    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
+    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
+    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
+
+    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
+    await positionSelect.click();
+    await page.getByRole('option', { name: position , exact: true }).click();
+
+    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
+    await designationSelect.click();
+    await page.getByRole('option', { name: designation , exact: true }).click();
+
+    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
+    await employmentStatusSelect.click();
+    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
+
+    // const fundSourceSelect = page.locator('.field').getByLabel('Fund Source');
+    // await fundSourceSelect.click();
+    // await page.getByRole('option', { name: fundSource, exact: true }).click();
+
+    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
+    await assignmentSelect.click();
+    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
+    
+    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
+    await divisionSelect.click();
+    await page.getByRole('option', { name: division, exact: true }).click();
+    
+    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
+    await unitSectionSelect.click();
+    await page.getByRole('option', { name: unitSection, exact: true }).click();
+
+    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
+    await userTypeSelect.click();
+    await page.getByRole('option', { name: userType, exact: true }).click();
+
+    const emailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Email Address', { exact: true }) });
+
+    const confirmEmailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+
+    await emailField.locator('input').fill(email);
+    await confirmEmailField.locator('input').fill(confirmEmail);
+
+    // click save button
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // expect error message to be visible
+    await expect(confirmEmailField.getByText('Email addresses must match', { exact: true })).toBeVisible();
+  });
+
+  test("Test 15: Cannot update employee/user if email already exists.", async ({ page }) => {
+    // Navigate to Employee Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Employee" }).click();
+
+    // verify url is correct
+    await expect(page.url()).toContain("/users");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    // open edit modal to get existing user values
+    await row.nth(5).locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    const emailValue = await page.locator('.field').filter({ hasText: 'Email Address' }).locator('input').first().inputValue();
+
+    // const employeeIDEditField = page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input');
+    // const usernameEditField = page.locator('.field').filter({ hasText: 'Username' }).locator('input');
+    // const emailEditField = page.locator('.field').filter({ hasText: 'Email Address' }).locator('input');
+
+    console.log("Existing Email: " + emailValue);
+
+    // close the edit modal field
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    const editModal = page.getByRole('dialog');
+
+    // open edit modal for first row user to edit and use the existing email value from the 6th row user
+    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    // expect edit modal to be visible
+    await expect(editModal).toBeVisible();
+
+    // expect that employee id and username input fields are disabled
+    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
+    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
+    
+    // use faker for filling out the form
+    const employeeFaker = employeeEditValidFaker();
+    const firstName = employeeFaker.firstName;
+    const middleName = employeeFaker.middleName;
+    const lastName = employeeFaker.lastName;
+    const position = employeeFaker.position;
+    const designation = employeeFaker.designation;
+    const employmentStatus = employeeFaker.employmentStatus;
+    const fundSource = employeeFaker.fundSource;
+    const areaOfAssignment = employeeFaker.areaOfAssignment;
+    const division = employeeFaker.division;
+    const unitSection = employeeFaker.unitSection;
+    const userType = employeeFaker.userType;
+
+    // fill out the form
+    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
+    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
+    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
+    
+    const emailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Email Address', { exact: true }) });
+
+    const confirmEmailField = page
+        .locator('.field')
+        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+
+    await emailField.locator('input').fill(emailValue);
+    await confirmEmailField.locator('input').fill(emailValue);
+
+    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
+    await positionSelect.click();
+    await page.getByRole('option', { name: position , exact: true }).click();
+
+    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
+    await designationSelect.click();
+    await page.getByRole('option', { name: designation , exact: true }).click();
+
+    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
+    await employmentStatusSelect.click();
+    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
+
+    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
+    await assignmentSelect.click();
+    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
+    
+    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
+    await divisionSelect.click();
+    await page.getByRole('option', { name: division, exact: true }).click();
+    
+    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
+    await unitSectionSelect.click();
+    await page.getByRole('option', { name: unitSection, exact: true }).click();
+
+    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
+    await userTypeSelect.click();
+    await page.getByRole('option', { name: userType, exact: true }).click();
+
+    // click save button
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // expect error message to be visible
+    await expect(emailField.getByText('The email has already been taken.', { exact: true })).toBeVisible();
+  });
+
+  test("Test 16: Cannot update employee/user if one or more required field is empty.", async ({ page }) => {
+    // Navigate to Employee Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Employee" }).click();
+
+    //verify url is correct
+    await expect(page.url()).toContain("/users");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const editModal = page.getByRole('dialog');
+
+    // open edit modal for first row user to edit and use the existing email value from the 6th row user
+    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+
+    // expect edit modal to be visible
+    await expect(editModal).toBeVisible();
+
+    // expect that employee id and username input fields are disabled
+    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
+    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
+
+    const firstName = page.locator('.field').filter({ hasText: 'First Name' });
+    const lastName = page.locator('.field').filter({ hasText: 'Last Name' });
+    const email = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
+    const confirmEmail = page.locator('.field').filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+
+    await firstName.locator('input').fill('');
+    await lastName.locator('input').fill('');
+    await email.locator('input').fill('');
+    await confirmEmail.locator('input').fill('');
+    // click save button without filling out the form
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // expect error message to be visible
+    await expect(firstName.getByText('The first name field is required.', { exact: true })).toBeVisible();
+    await expect(lastName.getByText('The last name field is required.', { exact: true })).toBeVisible();
+    await expect(email.getByText('The email field is required.', { exact: true })).toBeVisible();
+    await expect(confirmEmail.getByText('The Confirm Email Address field is required.', { exact: true })).toBeVisible();
   });
         
 });

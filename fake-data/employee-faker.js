@@ -16,7 +16,7 @@ export function employeeValidFaker() {
 
     const position = "Administrative Officer I";
     const designation = "Employee";
-    const employmentStatus = "Cos";
+    const employmentStatus = "Contract of Service";
     const fundSource = "Assistance to Individuals in Crisis Situation";
 
     const areaOfAssignment = "RPMO";
@@ -55,4 +55,46 @@ export function employeeInvalidFaker() {
     return {
         invalidInput
     }
+}
+
+export function employeeEditValidFaker() {
+
+    const firstName = faker.person.firstName();
+    const middleName = faker.person.middleName();
+    const lastName = faker.person.lastName();
+    const extensionName = faker.person.suffix();
+    const email = faker.internet.email();
+    const confirmEmail = email;
+    const password = "Dswd@12345!!";
+    const confirmPassword = password;
+
+    const position = "Administrative Officer I";
+    const designation = "Employee";
+    const employmentStatus = "Contract of Service";
+    const fundSource = "Assistance to Individuals in Crisis Situation";
+
+    const areaOfAssignment = "RPMO";
+    const division = "Protective Service Division";
+    const unitSection = "Crisis Intervention Section";
+
+    const userType = "Employee";
+
+    return {
+        firstName,
+        middleName,
+        lastName,
+        extensionName,
+        email,
+        confirmEmail,
+        password,
+        confirmPassword,
+        position,
+        designation,
+        employmentStatus,
+        fundSource,
+        areaOfAssignment,
+        division,
+        unitSection,
+        userType
+    };
 }
