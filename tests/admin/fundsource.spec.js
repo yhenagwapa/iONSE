@@ -541,177 +541,113 @@ test.describe.serial("Fund Source Management.", () => {
     
   });
 
-  test("Test 10: Cannot add employee/user if employee id, username and/or email already exists.", async ({ page }) => {
-    // Navigate to Employee Management page
+  test("Test 10: Cannot add fund source if pap code already exists.", async ({ page }) => {
+    // Navigate to Fund Source Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
 
     // verify url is correct
-    await expect(page.url()).toContain("/users");
+    await expect(page.url()).toContain("/fundsource");
 
-    // get first row user
+    // get first row fund source
     await page.waitForSelector('table tbody tr');
     const row = page.locator('table tbody tr');
 
-    // open edit modal to get existing user values
-    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+    const papcodeValue = await row.locator('td').nth(0).innerText();
+    const fundsourceNameValue = await row.locator('td').nth(1).innerText();
 
-    const employeeIDvalue = await page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input').inputValue();
-    const usernameValue = await page.locator('.field').filter({ hasText: 'Username' }).locator('input').inputValue();
-    const emailValue = await page.locator('.field').filter({ hasText: 'Email Address' }).locator('input').first().inputValue();
+    console.log("Existing PAP Code: " + papcodeValue);
+    console.log("Existing Fund Source Name: " + fundsourceNameValue);
 
-    // const employeeIDEditField = page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input');
-    // const usernameEditField = page.locator('.field').filter({ hasText: 'Username' }).locator('input');
-    // const emailEditField = page.locator('.field').filter({ hasText: 'Email Address' }).locator('input');
-
-    console.log("Existing Employee ID: " + employeeIDvalue);
-    console.log("Existing Username: " + usernameValue);
-    console.log("Existing Email: " + emailValue);
-
-    // close the edit modal field
-    await page.getByRole('button', { name: 'Cancel' }).click();
-
-    // click add employee button
+    // click add fund source button
     const addModal = page.getByRole('dialog');
-    await page.getByRole('button', { name: 'Add Employee' }).click();
+    await page.getByRole('button', { name: 'Add Fund Source' }).click();
 
     await expect(addModal).toBeVisible();
 
-    // use faker for filling out the form
-    const employeeFaker = employeeValidFaker();
-    const firstName = employeeFaker.firstName;
-    const middleName = employeeFaker.middleName;
-    const lastName = employeeFaker.lastName;
-    const password = employeeFaker.password;
-    const confirmPassword = employeeFaker.confirmPassword;
-    const position = employeeFaker.position;
-    const designation = employeeFaker.designation;
-    const employmentStatus = employeeFaker.employmentStatus;
-    const fundSource = employeeFaker.fundSource;
-    const areaOfAssignment = employeeFaker.areaOfAssignment;
-    const division = employeeFaker.division;
-    const unitSection = employeeFaker.unitSection;
-    const userType = employeeFaker.userType;
-
     // fill out the form
-    const employeeIDField = page.locator('.field').filter({ has: page.getByText('Employee ID', { exact: true }) });
-    await employeeIDField.locator('input').fill(employeeIDvalue);
+    const papcodeField = page.locator('.field').filter({ has: page.getByText('Program/Activity/Project Code', { exact: true }) });
+    await papcodeField.locator('input').fill(papcodeValue);
 
-    const usernameField = page.locator('.field').filter({ has: page.getByText('Username', { exact: true }) }).locator('input');
-    await usernameField.fill(usernameValue);
-
-    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
-    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
-    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
-    
-    const emailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Email Address', { exact: true }) });
-
-    const confirmEmailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
-
-    await emailField.locator('input').fill(emailValue);
-    await confirmEmailField.locator('input').fill(emailValue);
-
-    const passwordField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Password', { exact: true }) })
-        .locator('input');
-
-    const confirmPasswordField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Confirm Password', { exact: true }) })
-        .locator('input');
-
-    await passwordField.fill(password);
-    await confirmPasswordField.fill(confirmPassword);
-
-    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
-    await positionSelect.click();
-    await page.getByRole('option', { name: position , exact: true }).click();
-
-    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
-    await designationSelect.click();
-    await page.getByRole('option', { name: designation , exact: true }).click();
-
-    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
-    await employmentStatusSelect.click();
-    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
-
-    const fundSourceSelect = page.locator('.field').getByLabel('Fund Source');
-    await fundSourceSelect.click();
-    await page.getByRole('option', { name: fundSource, exact: true }).click();
-
-    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
-    await assignmentSelect.click();
-    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
-    
-    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
-    await divisionSelect.click();
-    await page.getByRole('option', { name: division, exact: true }).click();
-    
-    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
-    await unitSectionSelect.click();
-    await page.getByRole('option', { name: unitSection, exact: true }).click();
-
-    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
-    await userTypeSelect.click();
-    await page.getByRole('option', { name: userType, exact: true }).click();
+    const fundsourceNameField = page.locator('.field').filter({ has: page.getByText('Fund Source Name', { exact: true }) });
+    await fundsourceNameField.locator('input').fill(fundsourceNameValue);
 
     // click save button
     await page.getByRole('button', { name: 'Save Changes' }).click();
 
     // expect error message to be visible
-    await expect(employeeIDField.getByText('The employee number has already been taken.', { exact: true })).toBeVisible();
+    await expect(papcodeField.getByText('PAP Code already exists.', { exact: true })).toBeVisible();
   });
 
-  test("Test 11: Cannot add employee/user if one or more required field is empty.", async ({ page }) => {
-    // Navigate to Employee Management page
+  test("Test 11: Cannot add fund source if fund source name already exists.", async ({ page }) => {
+    // Navigate to Fund Source Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
+
+    // verify url is correct
+    await expect(page.url()).toContain("/fundsource");
+
+    // get first row fund source
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const papcodeValue = await row.locator('td').nth(0).innerText();
+    const fundsourceNameValue = await row.locator('td').nth(1).innerText();
+
+    console.log("Existing PAP Code: " + papcodeValue);
+    console.log("Existing Fund Source Name: " + fundsourceNameValue);
+
+    // click add fund source button
+    const addModal = page.getByRole('dialog');
+    await page.getByRole('button', { name: 'Add Fund Source' }).click();
+
+    await expect(addModal).toBeVisible();
+
+    // fill out the form
+    const papcodeField = page.locator('.field').filter({ has: page.getByText('Program/Activity/Project Code', { exact: true }) });
+    await papcodeField.locator('input').fill(papcodeValue);
+
+    const fundsourceNameField = page.locator('.field').filter({ has: page.getByText('Fund Source Name', { exact: true }) });
+    await fundsourceNameField.locator('input').fill(fundsourceNameValue);
+
+    // click save button
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // expect error message to be visible
+    await expect(fundsourceNameField.getByText('A fund source with this name already exists.', { exact: true })).toBeVisible();
+  });
+
+  test("Test 12: Cannot add fund source if one or more required field is empty.", async ({ page }) => {
+    // Navigate to Fund Source Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
 
     //verify url is correct
-    await expect(page.url()).toContain("/users");
+    await expect(page.url()).toContain("/fundsource");
 
     const addModal = page.getByRole('dialog');
 
-    // click add employee button
-    await page.getByRole('button', { name: 'Add Employee' }).click();
+    // click add fund source button
+    await page.getByRole('button', { name: 'Add Fund Source' }).click();
 
-    const employeeID = page.locator('.field').filter({ hasText: 'Employee ID' });
-    const username = page.locator('.field').filter({ hasText: 'Username' });
-    const firstName = page.locator('.field').filter({ hasText: 'First Name' });
-    const lastName = page.locator('.field').filter({ hasText: 'Last Name' });
-    const email = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
-    const confirmEmail = page.locator('.field').filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
-    const password = page.locator('.field').filter({ has: page.getByText('Password', { exact: true }) });
-    const confirmPassword = page.locator('.field').filter({ has: page.getByText('Confirm Password', { exact: true }) });
-    const division = page.locator('.field').filter({ hasText: 'Division' });
+    const papcode = page.locator('.field').filter({ hasText: 'Program/Activity/Project Code' });
+    const fundsourceName = page.locator('.field').filter({ hasText: 'Fund Source Name' });
 
     // click save button without filling out the form
     await page.getByRole('button', { name: 'Save Changes' }).click();
 
     // expect error message to be visible
-    await expect(employeeID.getByText('The Employee ID field is required.', { exact: true })).toBeVisible();
-    await expect(username.getByText('The username field is required.', { exact: true })).toBeVisible();
-    await expect(firstName.getByText('The first name field is required.', { exact: true })).toBeVisible();
-    await expect(lastName.getByText('The last name field is required.', { exact: true })).toBeVisible();
-    await expect(email.getByText('The email field is required.', { exact: true })).toBeVisible();
-    await expect(confirmEmail.getByText('The Confirm Email Address field is required.', { exact: true })).toBeVisible();
-    await expect(password.getByText('The password field is required.', { exact: true })).toBeVisible();
-    await expect(confirmPassword.getByText('The password field is required.', { exact: true })).toBeVisible();
-    await expect(division.getByText('The division field is required.', { exact: true })).toBeVisible();
+    await expect(papcode.getByText('PAP Code is required.', { exact: true })).toBeVisible();
+    await expect(fundsourceName.getByText('Fund Source Name is required.', { exact: true })).toBeVisible();
   });
 
-  test("Test 12: Can update employee details with valid entries.", async ({ page }) => {
-    // Navigate to Employee Management page
+  test("Test 13: Can update fund source details with valid entries.", async ({ page }) => {
+    // Navigate to Fund Source Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
 
     // verify url is correct
-    await expect(page.url()).toContain("/users");
+    await expect(page.url()).toContain("/fundsource");
 
     // get first row user
     await page.waitForSelector('table tbody tr');
@@ -720,7 +656,7 @@ test.describe.serial("Fund Source Management.", () => {
     const editModal = page.getByRole('dialog');
 
     // open edit modal to get existing user values
-    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
+    await row.locator('td').nth(3).locator('button:has(svg.fa-pen-to-square)').click();
 
     // expect edit modal to be visible
     await expect(editModal).toBeVisible();
@@ -730,98 +666,37 @@ test.describe.serial("Fund Source Management.", () => {
     await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
 
     // use faker for filling out the form
-    const employeeEditFaker = employeeEditValidFaker();
-    const firstName = employeeEditFaker.firstName;
-    const middleName = employeeEditFaker.middleName;
-    const lastName = employeeEditFaker.lastName;
-    const email = employeeEditFaker.email;
-    const confirmEmail = employeeEditFaker.confirmEmail;
-    const position = employeeEditFaker.position;
-    const designation = employeeEditFaker.designation;
-    const employmentStatus = employeeEditFaker.employmentStatus;
-    const fundSource = employeeEditFaker.fundSource;
-    const areaOfAssignment = employeeEditFaker.areaOfAssignment;
-    const division = employeeEditFaker.division;
-    const unitSection = employeeEditFaker.unitSection;
-    const userType = employeeEditFaker.userType;
+    const employeeEditFaker = fundSourceValidFaker();
+    const papcode = employeeEditFaker.papcode;
+    const fundsourceName = employeeEditFaker.fundsourceName;
 
     // fill out the form
-    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
-    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
-    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
-    
-    const emailField = page
+    const papCodeField = page
         .locator('.field')
-        .filter({ has: page.getByText('Email Address', { exact: true }) });
+        .filter({ has: page.getByText('Program/Activity/Project Code', { exact: true }) });
 
-    const confirmEmailField = page
+    const fundSourceField = page
         .locator('.field')
-        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
+        .filter({ has: page.getByText('Name', { exact: true }) });
 
-    await emailField.locator('input').fill(email);
-    await confirmEmailField.locator('input').fill(confirmEmail);
-
-    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
-    await positionSelect.click();
-    await page.getByRole('option', { name: position , exact: true }).click();
-
-    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
-    await designationSelect.click();
-    await page.getByRole('option', { name: designation , exact: true }).click();
-
-    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
-    await employmentStatusSelect.click();
-    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
-
-    // const fundSourceSelect = page.locator('.field').filter({ hasText: 'Fund Source' }).getByRole('combobox');
-    // await fundSourceSelect.click();
-    // await page.getByRole('option', { name: fundSource, exact: true }).click();
-
-    
-    // await page.locator('#pv_id_525 > .p-select-dropdown > .p-icon').click();
-    // await page.getByRole('combobox', { name: 'Assistance to Individuals in' }).press('Escape');
-    // await page.getByRole('button', { name: 'Close' }).click();
-
-    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
-    await assignmentSelect.click();
-    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
-    
-    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
-    await divisionSelect.click();
-    await page.getByRole('option', { name: division, exact: true }).click();
-    
-    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
-    await unitSectionSelect.click();
-    await page.getByRole('option', { name: unitSection, exact: true }).click();
-
-    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
-    await userTypeSelect.click();
-    await page.getByRole('option', { name: userType, exact: true }).click();
+    await papCodeField.locator('input').fill(papcode);
+    await fundSourceField.locator('input').fill(fundsourceName);
 
     // click save button
-    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await page.getByRole('button', { name: 'Update' }).click();
 
-    await page.waitForTimeout(10000); // wait for search results to load
+    await page.waitForTimeout(2000);
 
-    // search for the newly added employee/user
-    const employeeFullName = firstName + " " + middleName + " " + lastName;
-    await page.locator('input[placeholder="Search"]').fill(employeeFullName);
+    await page.waitForSelector('table tbody tr');
 
-    await page.keyboard.press("Enter");
+    const papcodeValue = await row.locator('td').nth(0).innerText();
+    const fundsourceNameValue = await row.locator('td').nth(1).innerText();
 
-    await page.waitForTimeout(5000); // wait for search results to load
-
-    // Verify that the search result is correct
-    const searchResult = await page
-      .locator("table tbody tr")
-      .first()
-      .locator("td")
-      .nth(1)
-      .innerText();
-    expect(searchResult).toContain(employeeFullName);
+    expect(papcodeValue).toBe(papcode);
+    expect(fundsourceNameValue).toBe(fundsourceName);
   });
 
-  test("Test 13: Cannot update employee details with invalid entries.", async ({ page }) => {
+  test("Test 14: Cannot update employee details with invalid entries.", async ({ page }) => {
     // Navigate to Employee Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
     await page.locator("a").filter({ hasText: "Employee" }).click();
@@ -846,267 +721,114 @@ test.describe.serial("Fund Source Management.", () => {
     await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
 
     // use faker for filling out the form
-    const employeeFaker = employeeInvalidFaker();
-    const invalidInput = employeeFaker.invalidInput;
+    const fundSourceFaker = fundSourceInvalidFaker();
+    const invalidInput = fundSourceFaker.invalidInput;
 
     // fill out the form
-    const firstNameField = page.locator('.field').filter({ has: page.getByText('First Name', { exact: true })});
-    const lastNameField = page.locator('.field').filter({ has: page.getByText('First Name', { exact: true })});
-    const emailField = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
+    const papcodeField = page.locator('.field').filter({ has: page.getByText('PAP Code', { exact: true })});
 
-    await firstNameField.locator('input').fill(invalidInput);
-    await lastNameField.locator('input').fill(invalidInput);
-    await emailField.locator('input').fill(invalidInput);
+    await papcodeField.locator('input').fill(invalidInput);
 
     // click save button
-    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await page.getByRole('button', { name: 'Update' }).click();
 
     // check if first name field shows an invalid message containing "The field contains invalid characters."
-    await expect(firstNameField.getByText('The field contains invalid characters.', { exact: true })).toBeVisible();
-    await expect(lastNameField.getByText('The field contains invalid characters.', { exact: true })).toBeVisible();
-    await expect(emailField.getByText('The email field is not a valid email.', { exact: true })).toBeVisible();
+    await expect(papcodeField.getByText('PAP Code is required.', { exact: true })).toBeVisible();
     
   });
 
-  test("Test 14: Cannot update employee/user if email do not match.", async ({ page }) => {
-    // Navigate to Employee Management page
+  test("Test 15: Cannot update fund source if pap code already exists.", async ({ page }) => {
+    // Navigate to Fund Source Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
-
-    //verify url is correct
-    await expect(page.url()).toContain("/users");
-
-    // get first row user
-    await page.waitForSelector('table tbody tr');
-    const row = page.locator('table tbody tr');
-
-    const editModal = page.getByRole('dialog');
-
-    // open edit modal to get existing user values
-    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
-
-    // expect edit modal to be visible
-    await expect(editModal).toBeVisible();
-
-    // expect that employee id and username input fields are disabled
-    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
-    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
-
-    // use faker for filling out the form
-    const employeeFaker = employeeEditValidFaker();
-    const firstName = employeeFaker.firstName;
-    const middleName = employeeFaker.middleName;
-    const lastName = employeeFaker.lastName;
-    const position = employeeFaker.position;
-    const designation = employeeFaker.designation;
-    const employmentStatus = employeeFaker.employmentStatus;
-    const areaOfAssignment = employeeFaker.areaOfAssignment;
-    const division = employeeFaker.division;
-    const unitSection = employeeFaker.unitSection;
-    const userType = employeeFaker.userType;
-
-    const email = employeeFaker.email;
-    const confirmEmail = "emaildonotmatch@example.com";
-
-    // fill out the form
-    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
-    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
-    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
-
-    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
-    await positionSelect.click();
-    await page.getByRole('option', { name: position , exact: true }).click();
-
-    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
-    await designationSelect.click();
-    await page.getByRole('option', { name: designation , exact: true }).click();
-
-    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
-    await employmentStatusSelect.click();
-    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
-
-    // const fundSourceSelect = page.locator('.field').getByLabel('Fund Source');
-    // await fundSourceSelect.click();
-    // await page.getByRole('option', { name: fundSource, exact: true }).click();
-
-    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
-    await assignmentSelect.click();
-    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
-    
-    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
-    await divisionSelect.click();
-    await page.getByRole('option', { name: division, exact: true }).click();
-    
-    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
-    await unitSectionSelect.click();
-    await page.getByRole('option', { name: unitSection, exact: true }).click();
-
-    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
-    await userTypeSelect.click();
-    await page.getByRole('option', { name: userType, exact: true }).click();
-
-    const emailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Email Address', { exact: true }) });
-
-    const confirmEmailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
-
-    await emailField.locator('input').fill(email);
-    await confirmEmailField.locator('input').fill(confirmEmail);
-
-    // click save button
-    await page.getByRole('button', { name: 'Save Changes' }).click();
-
-    // expect error message to be visible
-    await expect(confirmEmailField.getByText('Email addresses must match', { exact: true })).toBeVisible();
-  });
-
-  test("Test 15: Cannot update employee/user if email already exists.", async ({ page }) => {
-    // Navigate to Employee Management page
-    await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
 
     // verify url is correct
-    await expect(page.url()).toContain("/users");
+    await expect(page.url()).toContain("/fundsource");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const existingPapcode = await row.nth(0).locator('td').nth(0).innerText();
+    const existingFundsourceName = await row.nth(0).locator('td').nth(1).innerText();
+
+    // open edit modal to get existing user values
+    await row.nth(5).locator('td').nth(3).locator('button:has(svg.fa-pen-to-square)').click();
+
+    const editModal = page.getByRole('dialog');
+
+    await expect(editModal).toBeVisible();
+
+    const papcodeField = page.locator('.field').filter({ hasText: 'Program/Activity/Project Code' });
+    const fundsourceNameField = page.locator('.field').filter({ hasText: 'Fund Source Name' });
+
+    await papcodeField.locator('input').fill(existingPapcode);
+    await fundsourceNameField.locator('input').fill(existingFundsourceName);
+
+    // expect error message to be visible
+    await expect(papcodeField.getByText('Program/Activity/Project Code already exists.', { exact: true })).toBeVisible();
+  });
+
+  test("Test 16: Cannot update fund source if fund source name already exists.", async ({ page }) => {
+    // Navigate to Fund Source Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
+
+    // verify url is correct
+    await expect(page.url()).toContain("/fundsource");
+
+    // get first row user
+    await page.waitForSelector('table tbody tr');
+    const row = page.locator('table tbody tr');
+
+    const existingPapcode = await row.nth(0).locator('td').nth(0).innerText();
+    const existingFundsourceName = await row.nth(0).locator('td').nth(1).innerText();
+
+    // open edit modal to get existing user values
+    await row.nth(5).locator('td').nth(3).locator('button:has(svg.fa-pen-to-square)').click();
+
+    const editModal = page.getByRole('dialog');
+
+    await expect(editModal).toBeVisible();
+
+    const papcodeField = page.locator('.field').filter({ hasText: 'Program/Activity/Project Code' });
+    const fundsourceNameField = page.locator('.field').filter({ hasText: 'Fund Source Name' });
+
+    await papcodeField.locator('input').fill(existingPapcode);
+    await fundsourceNameField.locator('input').fill(existingFundsourceName);
+
+    // expect error message to be visible
+    await expect(fundsourceNameField.getByText('A fund source with this name already exists.', { exact: true })).toBeVisible();
+  });
+
+  test("Test 17: Cannot update fund source if one or more required fields are empty.", async ({ page }) => {
+    // Navigate to Fund Source Management page
+    await page.locator("a").filter({ hasText: "Management" }).click();
+    await page.locator("a").filter({ hasText: "Fund Source" }).click();
+
+    // verify url is correct
+    await expect(page.url()).toContain("/fundsource");
 
     // get first row user
     await page.waitForSelector('table tbody tr');
     const row = page.locator('table tbody tr');
 
     // open edit modal to get existing user values
-    await row.nth(5).locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
-
-    const emailValue = await page.locator('.field').filter({ hasText: 'Email Address' }).locator('input').first().inputValue();
-
-    // const employeeIDEditField = page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input');
-    // const usernameEditField = page.locator('.field').filter({ hasText: 'Username' }).locator('input');
-    // const emailEditField = page.locator('.field').filter({ hasText: 'Email Address' }).locator('input');
-
-    console.log("Existing Email: " + emailValue);
-
-    // close the edit modal field
-    await page.getByRole('button', { name: 'Cancel' }).click();
+    await row.nth(5).locator('td').nth(3).locator('button:has(svg.fa-pen-to-square)').click();
 
     const editModal = page.getByRole('dialog');
 
-    // open edit modal for first row user to edit and use the existing email value from the 6th row user
-    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
-
-    // expect edit modal to be visible
     await expect(editModal).toBeVisible();
 
-    // expect that employee id and username input fields are disabled
-    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
-    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
-    
-    // use faker for filling out the form
-    const employeeFaker = employeeEditValidFaker();
-    const firstName = employeeFaker.firstName;
-    const middleName = employeeFaker.middleName;
-    const lastName = employeeFaker.lastName;
-    const position = employeeFaker.position;
-    const designation = employeeFaker.designation;
-    const employmentStatus = employeeFaker.employmentStatus;
-    const fundSource = employeeFaker.fundSource;
-    const areaOfAssignment = employeeFaker.areaOfAssignment;
-    const division = employeeFaker.division;
-    const unitSection = employeeFaker.unitSection;
-    const userType = employeeFaker.userType;
+    const papcodeField = page.locator('.field').filter({ hasText: 'Program/Activity/Project Code' });
+    const fundsourceNameField = page.locator('.field').filter({ hasText: 'Fund Source Name' });
 
-    // fill out the form
-    await page.locator('.field').filter({ hasText: 'First Name' }).locator('input').fill(firstName);
-    await page.locator('.field').filter({ hasText: 'Middle Name' }).locator('input').fill(middleName);
-    await page.locator('.field').filter({ hasText: 'Last Name' }).locator('input').fill(lastName);
-    
-    const emailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Email Address', { exact: true }) });
-
-    const confirmEmailField = page
-        .locator('.field')
-        .filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
-
-    await emailField.locator('input').fill(emailValue);
-    await confirmEmailField.locator('input').fill(emailValue);
-
-    const positionSelect = page.locator('.field').filter({ hasText: 'Position' }).getByRole('combobox');
-    await positionSelect.click();
-    await page.getByRole('option', { name: position , exact: true }).click();
-
-    const designationSelect = page.locator('.field').filter({ hasText: 'Designation' }).getByRole('combobox');
-    await designationSelect.click();
-    await page.getByRole('option', { name: designation , exact: true }).click();
-
-    const employmentStatusSelect = page.locator('.field').filter({ hasText: 'Employment Status' }).getByRole('combobox');
-    await employmentStatusSelect.click();
-    await page.getByRole('option', { name: employmentStatus, exact: true }).click();
-
-    const assignmentSelect = page.locator('.field').filter({ hasText: 'Area of Assignment' }).getByRole('combobox');
-    await assignmentSelect.click();
-    await page.getByRole('option', { name: areaOfAssignment, exact: true}).click();
-    
-    const divisionSelect = page.locator('.field').filter({ hasText: 'Division' }).getByRole('combobox');
-    await divisionSelect.click();
-    await page.getByRole('option', { name: division, exact: true }).click();
-    
-    const unitSectionSelect = page.locator('.field').filter({ hasText: 'Unit / Section' }).getByRole('combobox');
-    await unitSectionSelect.click();
-    await page.getByRole('option', { name: unitSection, exact: true }).click();
-
-    const userTypeSelect = page.locator('.field').filter({ hasText: 'User Type' }).getByRole('combobox');
-    await userTypeSelect.click();
-    await page.getByRole('option', { name: userType, exact: true }).click();
-
-    // click save button
-    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await papcodeField.locator('input').fill("");
+    await fundsourceNameField.locator('input').fill("");
 
     // expect error message to be visible
-    await expect(emailField.getByText('The email has already been taken.', { exact: true })).toBeVisible();
-  });
-
-  test("Test 16: Cannot update employee/user if one or more required field is empty.", async ({ page }) => {
-    // Navigate to Employee Management page
-    await page.locator("a").filter({ hasText: "Management" }).click();
-    await page.locator("a").filter({ hasText: "Employee" }).click();
-
-    //verify url is correct
-    await expect(page.url()).toContain("/users");
-
-    // get first row user
-    await page.waitForSelector('table tbody tr');
-    const row = page.locator('table tbody tr');
-
-    const editModal = page.getByRole('dialog');
-
-    // open edit modal for first row user to edit and use the existing email value from the 6th row user
-    await row.locator('td').nth(8).locator('button:has(svg.fa-pen-to-square)').click();
-
-    // expect edit modal to be visible
-    await expect(editModal).toBeVisible();
-
-    // expect that employee id and username input fields are disabled
-    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
-    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
-
-    const firstName = page.locator('.field').filter({ hasText: 'First Name' });
-    const lastName = page.locator('.field').filter({ hasText: 'Last Name' });
-    const email = page.locator('.field').filter({ has: page.getByText('Email Address', { exact: true }) });
-    const confirmEmail = page.locator('.field').filter({ has: page.getByText('Confirm Email Address', { exact: true }) });
-
-    await firstName.locator('input').fill('');
-    await lastName.locator('input').fill('');
-    await email.locator('input').fill('');
-    await confirmEmail.locator('input').fill('');
-    // click save button without filling out the form
-    await page.getByRole('button', { name: 'Save Changes' }).click();
-
-    // expect error message to be visible
-    await expect(firstName.getByText('The first name field is required.', { exact: true })).toBeVisible();
-    await expect(lastName.getByText('The last name field is required.', { exact: true })).toBeVisible();
-    await expect(email.getByText('The email field is required.', { exact: true })).toBeVisible();
-    await expect(confirmEmail.getByText('The Confirm Email Address field is required.', { exact: true })).toBeVisible();
+    await expect(papcodeField.getByText('PAP Code is required.', { exact: true })).toBeVisible();
+    await expect(fundsourceNameField.getByText('Fund Source Name is required.', { exact: true })).toBeVisible();
   });
         
 });
