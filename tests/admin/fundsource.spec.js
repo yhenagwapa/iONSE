@@ -32,7 +32,7 @@ test.describe.serial("Fund Source Management.", () => {
     await page.locator("a").filter({ hasText: "Fund Source" }).click();
 
     //verify url is correct
-    await expect(page.url()).toContain("/users");
+    await expect(page.url()).toContain("/fundsource");
   });
 
   test("Test 2: Verify search functionality.", async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe.serial("Fund Source Management.", () => {
       .nth(0)
       .innerText();
 
-    expect(noResult).toContain("No employees found.");
+    expect(noResult).toContain("No fund sources found.");
   });
 
   test("Test 3: Navigate between pages.", async ({ page }) => {
@@ -295,94 +295,40 @@ test.describe.serial("Fund Source Management.", () => {
       test.skip();
     }
 
-    // Apply filter by Bureau/Service/Section/Unit
-    await page.getByRole('combobox', { name: 'Bureau/Service/Section/Unit' }).click();
-    await page.getByRole('option', { name: 'Regional Information & Communication Technology Management Section' }).click();
+    // Apply filter by status (active)
+    await page.getByRole('combobox', { name: 'Status' }).click();
+    await page.getByRole('option', { name: 'Active' }).click();
 
     await page.waitForTimeout(1000); // wait for filter to apply
     
-    // check if first column only shows Regional Information & Communication Technology Management Section
-    const filteredRows = page.locator('table tbody tr');
-    const filteredCount = await filteredRows.count();
+    // check if first column only shows Active status
+    const filteredActiveRows = page.locator('table tbody tr');
+    const filteredActiveCount = await filteredActiveRows.count();
 
-    for (let i = 0; i < filteredCount; i++) {
-      const obsu = await filteredRows.nth(i).locator('td').nth(2).innerText();
-      expect(obsu).toBe('Regional Information & Communication Technology Management Section');
+    for (let i = 0; i < filteredActiveCount; i++) {
+      const obsu = await filteredActiveRows.nth(i).locator('td').nth(2).innerText();
+      expect(obsu).toBe('Active');
     }
 
     // Clear filter by Bureau/Service/Section/Unit
     await page.locator('svg.p-select-clear-icon').click();
 
-    // Apply filter by Division
-    await page.getByRole('combobox', { name: 'Division' }).click();
-    await page.getByRole('option', { name: 'Policy and Plans Division' }).click();
+    // Apply filter by status (inactive)
+    await page.getByRole('combobox', { name: 'Status' }).click();
+    await page.getByRole('option', { name: 'Inactive' }).click();
 
     await page.waitForTimeout(1000); // wait for filter to apply
     
-    // check if first column only shows Policy and Plans Division
-    const filteredRows2 = page.locator('table tbody tr');
-    const filteredCount2 = await filteredRows2.count();
+    // check if first column only shows Inactive status
+    const filteredInactiveRows = page.locator('table tbody tr');
+    const filteredInactiveCount = await filteredInactiveRows.count();
 
-    for (let i = 0; i < filteredCount2; i++) {
-      const division = await filteredRows2.nth(i).locator('td').nth(3).innerText();
-      expect(division).toBe('Policy and Plans Division');
+    for (let i = 0; i < filteredInactiveCount; i++) {
+      const obsu = await filteredInactiveRows.nth(i).locator('td').nth(2).innerText();
+      expect(obsu).toBe('Inactive');
     }
 
-    // Clear filter by Division
-    await page.locator('svg.p-select-clear-icon').click();
-
-    // Apply filter by Employment Status
-    await page.getByRole('combobox', { name: 'Employment Status' }).click();
-    await page.getByRole('option', { name: 'Permanent' }).click();
-
-    await page.waitForTimeout(1000); // wait for filter to apply
-    
-    // check if first column only shows Permanent
-    const filteredRows3 = page.locator('table tbody tr');
-    const filteredCount3 = await filteredRows3.count();
-
-    for (let i = 0; i < filteredCount3; i++) {
-      const employmentStatus = await filteredRows3.nth(i).locator('td').nth(5).innerText();
-      expect(employmentStatus).toBe('Permanent');
-    }
-
-    // Clear filter by Employment Status
-    await page.locator('svg.p-select-clear-icon').click();
-
-    // Apply filter by Fund Source
-    await page.getByRole('combobox', { name: 'Fund Source' }).click();
-    await page.getByRole('option', { name: 'Information and Communication Technology Service Management' }).click();
-
-    await page.waitForTimeout(1000); // wait for filter to apply
-    
-    // check if first column only shows Permanent
-    const filteredRows4 = page.locator('table tbody tr');
-    const filteredCount4 = await filteredRows4.count();
-
-    for (let i = 0; i < filteredCount4; i++) {
-      const fundSource = await filteredRows4.nth(i).locator('td').nth(6).innerText();
-      expect(fundSource).toBe('Information and Communication Technology Service Management');
-    }
-
-    // Clear filter by Fund Source
-    await page.locator('svg.p-select-clear-icon').click();
-
-    // Apply filter by User Roles
-    await page.getByRole('combobox', { name: 'User Roles'}).click();
-    await page.getByRole('option', { name: 'Accounting' }).click();
-
-    await page.waitForTimeout(1000); // wait for filter to apply
-    
-    // check if first column only shows Permanent
-    const filteredRows5 = page.locator('table tbody tr');
-    const filteredCount5 = await filteredRows5.count();
-
-    for (let i = 0; i < filteredCount5; i++) {
-      const userRole = await filteredRows5.nth(i).locator('td').nth(7).innerText();
-      expect(userRole).toBe('Accounting');
-    }
-
-    // Clear filter by User Roles
+    // Clear filter by Bureau/Service/Section/Unit
     await page.locator('svg.p-select-clear-icon').click();
 
   });
@@ -661,14 +607,10 @@ test.describe.serial("Fund Source Management.", () => {
     // expect edit modal to be visible
     await expect(editModal).toBeVisible();
 
-    // expect that employee id and username input fields are disabled
-    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
-    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
-
     // use faker for filling out the form
-    const employeeEditFaker = fundSourceValidFaker();
-    const papcode = employeeEditFaker.papcode;
-    const fundsourceName = employeeEditFaker.fundsourceName;
+    const fundSourceEditFaker = fundSourceValidFaker();
+    const papcode = fundSourceEditFaker.papcode;
+    const fundsourceName = fundSourceEditFaker.fundsourceName;
 
     // fill out the form
     const papCodeField = page
@@ -715,10 +657,6 @@ test.describe.serial("Fund Source Management.", () => {
 
     // expect edit modal to be visible
     await expect(editModal).toBeVisible();
-
-    // expect that employee id and username input fields are disabled
-    await expect(page.locator('.field').filter({ hasText: 'Employee ID' }).locator('input')).toBeDisabled();
-    await expect(page.locator('.field').filter({ hasText: 'Username' }).locator('input')).toBeDisabled();
 
     // use faker for filling out the form
     const fundSourceFaker = fundSourceInvalidFaker();
