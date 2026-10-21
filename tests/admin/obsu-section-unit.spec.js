@@ -240,7 +240,7 @@ test.describe.serial("OBSU Management (Section).", () => {
     }
   });
 
-  test("Test 4: Verify rows per page works..", async ({ page }) => {
+  test("Test 4: Verify rows per page works.", async ({ page }) => {
     // Navigate to OBSU Management page
     await page.locator("a").filter({ hasText: "Management" }).click();
     await page.locator("a").filter({ hasText: "OBSU" }).click();
@@ -266,12 +266,12 @@ test.describe.serial("OBSU Management (Section).", () => {
     await page.getByRole("option", { name: "5", exact: true }).click();
 
       // Wait until the table displays 50 rows
-    const fundSourceRows = page.locator('table tbody tr');
+    const sectionUnitRows = page.locator('table tbody tr');
 
-    await expect(fundSourceRows).toHaveCount(5);
+    await expect(sectionUnitRows).toHaveCount(5);
 
     // Assert
-    expect(await fundSourceRows.count()).toBeLessThanOrEqual(5);
+    expect(await sectionUnitRows.count()).toBeLessThanOrEqual(5);
       
   });
 
